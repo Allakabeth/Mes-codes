@@ -75,6 +75,7 @@
   .pwrow{align-items:stretch}
   .pwrow input{flex:1;min-width:0}
   .pwrow .eye{margin-top:0;min-height:0}
+  .oneline{white-space:nowrap;font-size:clamp(15px,4.6vw,21px);padding-left:8px;padding-right:8px}
   .err{color:var(--danger);font-weight:700;margin-top:10px}
   .linkbtn{display:block;margin:22px auto 0;background:none;border:0;color:var(--muted);
     text-decoration:underline;font-size:18px;padding:10px}
@@ -93,15 +94,14 @@
   <!-- ÉCRAN VERROU -->
   <section id="vLock" class="hidden">
     <div class="lockico">🔒</div>
-    <h2 class="center">Mes codes sont protégés</h2>
-    <label for="lockPw">Mon mot de passe</label>
+    <label for="lockPw">Mot de passe</label>
     <div class="row pwrow">
       <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button class="big b-light eye" id="lockEye" aria-label="Voir le mot de passe">👁️</button>
     </div>
     <div id="lockErr" class="err hidden">❌ Ce n'est pas le bon mot de passe.</div>
     <button class="big b-ok" id="btnUnlock">🔓 Ouvrir</button>
-    <button class="big b-light" id="btnHint">💡 J'ai oublié mon mot de passe</button>
+    <button class="big b-light oneline" id="btnHint">💡 J'ai oublié mon mot de passe</button>
     <div id="hintBox" class="help hidden"></div>
   </section>
 
@@ -372,9 +372,9 @@ $("btnLockNow").onclick=()=>{ lock(); toast("🔒 Verrouillé"); };
 $("btnHint").onclick=()=>{
   const h=(secure && secure.hint) ? secure.hint : "";
   const box=$("hintBox");
-  box.textContent = h ? "💡 Votre phrase : "+h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.";
+  box.textContent = h ? h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.";
   box.classList.remove("hidden");
-  say(h ? "Votre phrase pour vous souvenir : "+h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.");
+  say(h ? h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.");
 };
 function eyeToggle(btnId, inputIds){
   $(btnId).onclick=()=>{
