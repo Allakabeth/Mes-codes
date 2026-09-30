@@ -76,6 +76,7 @@
   .pwrow input{flex:1;min-width:0}
   .pwrow .eye{margin-top:0;min-height:0}
   .oneline{white-space:nowrap;font-size:clamp(15px,4.6vw,21px);padding-left:8px;padding-right:8px}
+  .compact label{margin:14px 0 6px}
   .err{color:var(--danger);font-weight:700;margin-top:10px}
   .linkbtn{display:block;margin:22px auto 0;background:none;border:0;color:var(--muted);
     text-decoration:underline;font-size:18px;padding:10px}
@@ -106,23 +107,19 @@
   </section>
 
   <!-- ÉCRAN CHOISIR LE MOT DE PASSE -->
-  <section id="vSetPw" class="hidden">
+  <section id="vSetPw" class="hidden compact">
     <button class="back" data-go="list">◀ Retour</button>
-    <h2>🔒 Protéger mes codes</h2>
-    <p class="muted">Avec un mot de passe, personne ne peut voir vos codes, même avec votre téléphone.</p>
-    <label for="newPw">Mon mot de passe</label>
+    <label for="newPw">🔒 Mot de passe</label>
     <div class="row pwrow">
       <input id="newPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button class="big b-light eye" id="newEye" aria-label="Voir le mot de passe">👁️</button>
     </div>
-    <label for="newPw2">J'écris encore le mot de passe</label>
+    <label for="newPw2">🔒 Encore le mot de passe</label>
     <input id="newPw2" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <label for="newHint">Une phrase pour me souvenir</label>
-    <input id="newHint" autocomplete="off" placeholder="Ex : l'année de mon permis">
-    <p class="muted">⚠️ Écrivez une phrase qui vous fait penser au mot de passe, mais n'écrivez pas le mot de passe dedans.</p>
-    <div class="help">💡 Si vous oubliez le mot de passe, l'application vous montrera cette phrase.</div>
-    <button class="big b-ok" id="btnSavePw">✅ Enregistrer le mot de passe</button>
-    <button class="big b-danger hidden" id="btnRemovePw">🔓 Enlever le mot de passe</button>
+    <label for="newHint">💡 Phrase pour me souvenir</label>
+    <input id="newHint" autocomplete="off" placeholder="Ex : année du permis">
+    <button class="big b-ok" id="btnSavePw">✅ Enregistrer</button>
+    <button class="linkbtn hidden" id="btnRemovePw">Enlever le mot de passe</button>
   </section>
 
   <!-- ÉCRAN 1 : LISTE -->
@@ -412,7 +409,7 @@ $("btnSavePw").onclick=async()=>{
   cryptoKey=await deriveKey(pw, salt);
   secure={salt:b64(salt), hint};
   await save();
-  $("btnSavePw").textContent="✅ Enregistrer le mot de passe";
+  $("btnSavePw").textContent="✅ Enregistrer";
   renderList(); show("vList"); toast("🔒 Codes protégés");
 };
 $("btnRemovePw").onclick=async()=>{
@@ -505,7 +502,7 @@ $("btnSpeakHome").onclick=()=>say(
   !$("vLock").classList.contains("hidden")
   ? "Vos codes sont protégés. Écrivez votre mot de passe, puis appuyez sur Ouvrir. Si vous l'avez oublié, appuyez sur J'ai oublié mon mot de passe."
   : !$("vSetPw").classList.contains("hidden")
-  ? "Choisissez un mot de passe. Écrivez-le deux fois. Puis écrivez une phrase pour vous en souvenir, sans écrire le mot de passe. Si vous oubliez le mot de passe, l'application vous montrera cette phrase."
+  ? "Écrivez le mot de passe deux fois. Puis une phrase pour vous en souvenir."
   : $("vSite").classList.contains("hidden")
   ? "Mes codes. Appuyez sur un site pour voir votre identifiant et votre mot de passe. Pour ajouter un site, appuyez sur Ajouter un site."
   : "Étape 1, copier l'identifiant. Étape 2, copier le mot de passe. Étape 3, ouvrir le site, puis appuyer longtemps dans la case et coller."
