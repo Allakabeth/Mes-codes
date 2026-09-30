@@ -77,6 +77,10 @@
   .pwrow .eye{margin-top:0;min-height:0}
   .oneline{white-space:nowrap;font-size:clamp(15px,4.6vw,21px);padding-left:8px;padding-right:8px}
   .compact label{margin:14px 0 6px}
+  #presets{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  #presets .site{min-height:0;height:max(80px,calc((100dvh - 170px) / 4));max-height:150px;
+    padding:8px 4px;font-size:clamp(13px,3.8vw,15px);gap:4px;border-radius:14px;overflow-wrap:anywhere}
+  #presets .site .ico{font-size:32px}
   .err{color:var(--danger);font-weight:700;margin-top:10px}
   .linkbtn{display:block;margin:22px auto 0;background:none;border:0;color:var(--muted);
     text-decoration:underline;font-size:18px;padding:10px}
@@ -85,7 +89,8 @@
 <body>
 
 <header>
-  <h1>🔑 Mes codes</h1>
+  <button id="hdrBack" class="hidden" aria-label="Retour">◀</button>
+  <h1 id="hdrTitle">🔑 Mes codes</h1>
   <button id="btnLockNow" class="hidden" aria-label="Changer mon mot de passe">🔒</button>
   <button id="btnSpeakHome" aria-label="Écouter">🔊</button>
 </header>
@@ -185,8 +190,6 @@
 
   <!-- ÉCRAN 3 : CHOISIR UN SITE -->
   <section id="vPick" class="hidden">
-    <button class="back" data-go="list">◀ Retour</button>
-    <h2 style="margin:6px 0 14px">Quel site ?</h2>
     <div id="presets" class="grid"></div>
   </section>
 
@@ -217,18 +220,18 @@
 <script>
 // ---------- Sites proposés ----------
 const PRESETS = [
+  {id:"autre",  name:"Autre site",      ico:"➕", color:"#1e8a3c", url:""},
   {id:"ft",     name:"France Travail",  ico:"💼", color:"#1d3d8f", url:"https://candidat.francetravail.fr/espacepersonnel/"},
   {id:"ameli",  name:"Ameli",           ico:"🩺", color:"#0c6fb8", url:"https://assure.ameli.fr/"},
   {id:"caf",    name:"CAF",             ico:"🏠", color:"#0a7d8c", url:"https://www.caf.fr/"},
   {id:"impots", name:"Impôts",          ico:"🧾", color:"#34495e", url:"https://www.impots.gouv.fr/"},
   {id:"mcf",    name:"Mon Compte Formation", ico:"🎓", color:"#6a3d9a", url:"https://www.moncompteformation.gouv.fr/"},
-  {id:"fc",     name:"FranceConnect",   ico:"🇫🇷", color:"#000091", url:"https://franceconnect.gouv.fr/"},
-  {id:"ants",   name:"ANTS (permis, carte grise)", ico:"🚗", color:"#b03a2e", url:"https://ants.gouv.fr/"},
+  {id:"fc",     name:"France Connect",   ico:"🇫🇷", color:"#000091", url:"https://franceconnect.gouv.fr/"},
+  {id:"ants",   name:"ANTS", ico:"🚗", color:"#b03a2e", url:"https://ants.gouv.fr/"},
   {id:"doctolib", name:"Doctolib",      ico:"📅", color:"#107aca", url:"https://www.doctolib.fr/"},
   {id:"gmail",  name:"Gmail",           ico:"✉️", color:"#c5221f", url:"https://mail.google.com/"},
-  {id:"outlook",name:"Outlook / Hotmail", ico:"📧", color:"#0f6cbd", url:"https://outlook.live.com/"},
-  {id:"retraite", name:"Info Retraite", ico:"👵", color:"#8e44ad", url:"https://www.info-retraite.fr/"},
-  {id:"autre",  name:"Autre site",      ico:"➕", color:"#5a6272", url:""}
+  {id:"outlook",name:"Outlook", ico:"📧", color:"#0f6cbd", url:"https://outlook.live.com/"},
+  {id:"retraite", name:"Info Retraite", ico:"👵", color:"#8e44ad", url:"https://www.info-retraite.fr/"}
 ];
 
 // ---------- Données (restent sur le téléphone) ----------
@@ -281,6 +284,10 @@ async function save(){
 const $ = id => document.getElementById(id);
 function show(v){
   ["vList","vSite","vPick","vForm","vLock","vSetPw"].forEach(x => $(x).classList.toggle("hidden", x!==v));
+  const pick = v==="vPick";
+  $("hdrTitle").textContent = pick ? "Nouveau code" : "🔑 Mes codes";
+  $("hdrBack").classList.toggle("hidden", !pick);
+  $("btnLockNow").classList.toggle("hidden", pick || v==="vLock" || !(secure && cryptoKey));
   window.scrollTo(0,0);
 }
 function toast(msg){
@@ -429,7 +436,7 @@ $("togglePass").onclick=()=>{ passVisible=!passVisible; renderPass(); };
 $("copyUser").onclick=e=>copy(current.user||"", e.currentTarget, "Identifiant");
 $("copyPass").onclick=e=>copy(current.pass||"", e.currentTarget, "Mot de passe");
 $("openSite").onclick=()=>{ if(current.url) window.open(current.url,"_blank"); };
-$("btnEdit").onclick=()=>openForm(PRESETS.find(p=>p.id===current.preset)||PRESETS.at(-1), current);
+$("btnEdit").onclick=()=>openForm(PRESETS.find(p=>p.id===current.preset)||PRESETS.find(p=>p.id==="autre"), current);
 $("btnDelete").onclick=()=>{
   if(confirm("Supprimer "+current.name+" ?")){
     items=items.filter(i=>i.uid!==current.uid); save(); renderList(); show("vList");
@@ -442,6 +449,7 @@ function renderPresets(){
   PRESETS.forEach(p => P.appendChild(tile(p, ()=>openForm(p,null))));
 }
 $("btnAdd").onclick=()=>{ renderPresets(); show("vPick"); };
+$("hdrBack").onclick=()=>{ renderList(); show("vList"); };
 
 // ---------- Formulaire ----------
 function openForm(preset, item){
