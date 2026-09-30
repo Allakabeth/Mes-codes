@@ -1,6 +1,7 @@
-// Garde l'application sur le téléphone pour qu'elle marche sans internet
-// (ou sur un Wi-Fi qui bloque le site).
-const CACHE = "mescodes-v13";
+// Mes codes : l'application fonctionne uniquement avec la copie gardée sur le téléphone.
+// Aucune mise à jour automatique : une fois installée, elle ne va plus chercher
+// sa page sur internet.
+const CACHE = "mescodes-final";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -17,19 +18,12 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  // Ouverture de l'application : la version en ligne si internet marche
-  // (pour recevoir les mises à jour), sinon la copie gardée sur le téléphone.
+  // Ouverture de l'application : toujours la copie du téléphone.
   if (e.request.mode === "navigate") {
-    e.respondWith(
-      fetch(e.request)
-        .then(r => {
-          if (r.ok) { const copie = r.clone(); caches.open(CACHE).then(c => c.put("./index.html", copie)); }
-          return r;
-        })
-        .catch(() => caches.match("./index.html"))
-    );
+    e.respondWith(caches.match("./index.html").then(r => r || fetch(e.request)));
     return;
   }
+  // Fichiers de l'application : la copie du téléphone d'abord.
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(r => r || fetch(e.request))
   );
