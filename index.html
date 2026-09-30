@@ -69,16 +69,62 @@
     background:var(--ok);color:#fff;padding:16px 26px;border-radius:40px;
     font-size:22px;font-weight:700;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:20}
   .small{font-size:17px;color:var(--muted);text-align:center;margin-top:22px}
+  .center{text-align:center}
+  .muted{color:var(--muted);font-size:18px;margin:8px 0}
+  .lockico{font-size:70px;text-align:center;margin-top:10px}
+  .pwrow{align-items:stretch}
+  .pwrow input{flex:1;min-width:0}
+  .pwrow .eye{margin-top:0;min-height:0}
+  .err{color:var(--danger);font-weight:700;margin-top:10px}
+  .linkbtn{display:block;margin:22px auto 0;background:none;border:0;color:var(--muted);
+    text-decoration:underline;font-size:18px;padding:10px}
 </style>
 </head>
 <body>
 
 <header>
   <h1>🔑 Mes codes</h1>
+  <button id="btnLockNow" class="hidden" aria-label="Verrouiller">🔒</button>
   <button id="btnSpeakHome" aria-label="Écouter">🔊</button>
 </header>
 
 <main>
+
+  <!-- ÉCRAN VERROU -->
+  <section id="vLock" class="hidden">
+    <div class="lockico">🔒</div>
+    <h2 class="center">Mes codes sont protégés</h2>
+    <label for="lockPw">Mon mot de passe</label>
+    <div class="row pwrow">
+      <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="big b-light eye" id="lockEye" aria-label="Voir le mot de passe">👁️</button>
+    </div>
+    <div id="lockErr" class="err hidden">❌ Ce n'est pas le bon mot de passe.</div>
+    <button class="big b-ok" id="btnUnlock">🔓 Ouvrir</button>
+    <button class="big b-light" id="btnHint">💡 Voir ma phrase pour me souvenir</button>
+    <div id="hintBox" class="help hidden"></div>
+    <button class="linkbtn" id="btnForgot">J'ai oublié mon mot de passe</button>
+  </section>
+
+  <!-- ÉCRAN CHOISIR LE MOT DE PASSE -->
+  <section id="vSetPw" class="hidden">
+    <button class="back" data-go="list">◀ Retour</button>
+    <h2>🔒 Protéger mes codes</h2>
+    <p class="muted">Avec un mot de passe, personne ne peut voir vos codes, même avec votre téléphone.</p>
+    <label for="newPw">Mon mot de passe</label>
+    <div class="row pwrow">
+      <input id="newPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="big b-light eye" id="newEye" aria-label="Voir le mot de passe">👁️</button>
+    </div>
+    <label for="newPw2">J'écris encore le mot de passe</label>
+    <input id="newPw2" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <label for="newHint">Une phrase pour me souvenir</label>
+    <input id="newHint" autocomplete="off" placeholder="Ex : l'année de mon permis">
+    <p class="muted">⚠️ La phrase aide à retrouver le mot de passe, mais ne l'écrivez pas dedans.</p>
+    <div class="help">⚠️ Si vous oubliez le mot de passe, vos codes seront perdus.</div>
+    <button class="big b-ok" id="btnSavePw">✅ Enregistrer le mot de passe</button>
+    <button class="big b-danger hidden" id="btnRemovePw">🔓 Enlever le mot de passe</button>
+  </section>
 
   <!-- ÉCRAN 1 : LISTE -->
   <section id="vList">
@@ -102,6 +148,7 @@
       <p>Vous n'avez pas encore de code.<br>Appuyez sur <b>Ajouter un site</b>.</p>
     </div>
     <button class="big b-main" id="btnAdd">➕ Ajouter un site</button>
+    <button class="big b-light" id="btnProtect">🔒 Protéger mes codes avec un mot de passe</button>
     <button class="big b-light" id="btnBackup">📝 Mettre mes codes dans mes notes</button>
     <p class="small">Vos codes restent uniquement sur ce téléphone.</p>
   </section>
@@ -191,17 +238,55 @@ const PRESETS = [
 ];
 
 // ---------- Données (restent sur le téléphone) ----------
+// Sans mot de passe : codes dans KEY. Avec mot de passe : codes chiffrés (AES)
+// dans KEY_SECURE ; sans le mot de passe, ils sont illisibles.
 const KEY = "mescodes_v1";
-function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){ toast("⚠️ Impossible d'enregistrer"); } }
-let items = load();
+const KEY_SECURE = "mescodes_secure_v1";
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function loadPlain(){ try{ return JSON.parse(lsGet(KEY)) || []; }catch(e){ return []; } }
+let secure = null; try{ secure = JSON.parse(lsGet(KEY_SECURE)); }catch(e){ secure = null; }
+let cryptoKey = null;           // présent seulement quand l'application est déverrouillée
+let items = secure ? [] : loadPlain();
 let current = null;   // site affiché
 let editing = null;   // {preset, item?}
+
+// Chiffrement
+const b64 = u8 => btoa(String.fromCharCode(...u8));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pw, salt){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:200000, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptWith(key, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return {iv:b64(iv), data:b64(new Uint8Array(ct))};
+}
+async function decryptWith(key, s){
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(s.iv)}, key, unb64(s.data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+async function save(){
+  let ok;
+  if(secure){
+    if(!cryptoKey) return;
+    secure = Object.assign({}, secure, await encryptWith(cryptoKey, items));
+    ok = lsSet(KEY_SECURE, JSON.stringify(secure));
+    lsDel(KEY);
+  } else {
+    ok = lsSet(KEY, JSON.stringify(items));
+  }
+  if(!ok) toast("⚠️ Impossible d'enregistrer");
+}
 
 // ---------- Outils ----------
 const $ = id => document.getElementById(id);
 function show(v){
-  ["vList","vSite","vPick","vForm"].forEach(x => $(x).classList.toggle("hidden", x!==v));
+  ["vList","vSite","vPick","vForm","vLock","vSetPw"].forEach(x => $(x).classList.toggle("hidden", x!==v));
   window.scrollTo(0,0);
 }
 function toast(msg){
@@ -252,7 +337,93 @@ function renderList(){
   const L=$("list"); L.innerHTML="";
   items.forEach(it => L.appendChild(tile(it, ()=>openSite(it.uid))));
   $("empty").classList.toggle("hidden", items.length>0);
+  $("btnProtect").textContent = secure ? "🔒 Changer ou enlever mon mot de passe" : "🔒 Protéger mes codes avec un mot de passe";
+  $("btnLockNow").classList.toggle("hidden", !secure);
 }
+
+// ---------- Verrou ----------
+function lock(){
+  if(!secure) return;
+  cryptoKey=null; items=[]; current=null;
+  $("lockPw").value=""; $("lockPw").type="password";
+  $("lockErr").classList.add("hidden"); $("hintBox").classList.add("hidden");
+  $("btnLockNow").classList.add("hidden");
+  $("list").innerHTML="";
+  show("vLock");
+}
+async function unlock(){
+  const pw=$("lockPw").value;
+  if(!pw){ $("lockPw").focus(); return; }
+  $("btnUnlock").textContent="⏳ Ouverture…";
+  try{
+    const key=await deriveKey(pw, unb64(secure.salt));
+    items=await decryptWith(key, secure);
+    cryptoKey=key;
+    $("lockErr").classList.add("hidden");
+    renderList(); show("vList");
+  }catch(e){
+    $("lockErr").classList.remove("hidden");
+    if(navigator.vibrate) navigator.vibrate([80,60,80]);
+  }
+  $("btnUnlock").textContent="🔓 Ouvrir";
+}
+$("btnUnlock").onclick=unlock;
+$("lockPw").addEventListener("keydown", e=>{ if(e.key==="Enter") unlock(); });
+$("btnLockNow").onclick=()=>{ lock(); toast("🔒 Verrouillé"); };
+$("btnHint").onclick=()=>{
+  const h=(secure && secure.hint) ? secure.hint : "Vous n'avez pas écrit de phrase.";
+  const box=$("hintBox"); box.textContent="💡 "+h; box.classList.remove("hidden");
+  say("Votre phrase pour vous souvenir : "+h);
+};
+$("btnForgot").onclick=()=>{
+  if(!confirm("Sans le mot de passe, vos codes ne peuvent pas être ouverts.\n\nEffacer tous vos codes et recommencer ?")) return;
+  lsDel(KEY_SECURE); lsDel(KEY);
+  secure=null; cryptoKey=null; items=[];
+  renderList(); show("vList"); toast("🗑️ Codes effacés");
+};
+function eyeToggle(btnId, inputIds){
+  $(btnId).onclick=()=>{
+    const showIt=$(inputIds[0]).type==="password";
+    inputIds.forEach(id=>$(id).type = showIt ? "text" : "password");
+    $(btnId).textContent = showIt ? "🙈" : "👁️";
+  };
+}
+eyeToggle("lockEye", ["lockPw"]);
+eyeToggle("newEye", ["newPw","newPw2"]);
+
+// Verrouillage automatique : si l'application reste fermée plus de 3 minutes.
+let hiddenAt=0;
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){ hiddenAt=Date.now(); }
+  else if(secure && cryptoKey && Date.now()-hiddenAt > 3*60*1000){ lock(); }
+});
+
+// ---------- Choisir / changer / enlever le mot de passe ----------
+$("btnProtect").onclick=()=>{
+  $("newPw").value=""; $("newPw2").value="";
+  $("newPw").type="password"; $("newPw2").type="password"; $("newEye").textContent="👁️";
+  $("newHint").value = secure ? (secure.hint||"") : "";
+  $("btnRemovePw").classList.toggle("hidden", !secure);
+  show("vSetPw");
+};
+$("btnSavePw").onclick=async()=>{
+  const pw=$("newPw").value, pw2=$("newPw2").value, hint=$("newHint").value.trim();
+  if(pw.length<4){ toast("✏️ Au moins 4 caractères"); $("newPw").focus(); return; }
+  if(pw!==pw2){ toast("❌ Les 2 mots de passe sont différents"); $("newPw2").focus(); return; }
+  if(hint && hint.toLowerCase().includes(pw.toLowerCase())){ toast("⚠️ N'écrivez pas le mot de passe dans la phrase"); $("newHint").focus(); return; }
+  $("btnSavePw").textContent="⏳ Enregistrement…";
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  cryptoKey=await deriveKey(pw, salt);
+  secure={salt:b64(salt), hint};
+  await save();
+  $("btnSavePw").textContent="✅ Enregistrer le mot de passe";
+  renderList(); show("vList"); toast("🔒 Codes protégés");
+};
+$("btnRemovePw").onclick=async()=>{
+  if(!confirm("Enlever le mot de passe ?\nToute personne qui a votre téléphone pourra voir vos codes.")) return;
+  secure=null; cryptoKey=null; lsDel(KEY_SECURE);
+  await save(); renderList(); show("vList"); toast("🔓 Mot de passe enlevé");
+};
 
 // ---------- Écran site ----------
 let passVisible=false;
@@ -319,6 +490,7 @@ $("btnSave").onclick=()=>{
 // ---------- Sauvegarde dans les notes ----------
 $("btnBackup").onclick=async e=>{
   if(!items.length){ toast("📭 Aucun code à sauvegarder"); return; }
+  if(secure && !confirm("Attention : dans Notes, vos codes ne sont PAS protégés.\nToute personne qui a votre téléphone pourra les lire.\n\nContinuer ?")) return;
   const text = "MES CODES\n\n" + items.map(i =>
     `${i.name}\nIdentifiant : ${i.user||"-"}\nMot de passe : ${i.pass||"-"}` + (i.url?`\nSite : ${i.url}`:"")
   ).join("\n\n");
@@ -334,7 +506,11 @@ $("btnBackup").onclick=async e=>{
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ renderList(); show("vList"); });
 document.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
 $("btnSpeakHome").onclick=()=>say(
-  $("vSite").classList.contains("hidden")
+  !$("vLock").classList.contains("hidden")
+  ? "Vos codes sont protégés. Écrivez votre mot de passe, puis appuyez sur Ouvrir. Si vous l'avez oublié, appuyez sur Voir ma phrase pour me souvenir."
+  : !$("vSetPw").classList.contains("hidden")
+  ? "Choisissez un mot de passe. Écrivez-le deux fois. Puis écrivez une phrase pour vous en souvenir, sans écrire le mot de passe. Si vous oubliez le mot de passe, vos codes seront perdus."
+  : $("vSite").classList.contains("hidden")
   ? "Mes codes. Appuyez sur un site pour voir votre identifiant et votre mot de passe. Pour ajouter un site, appuyez sur Ajouter un site."
   : "Étape 1, copier l'identifiant. Étape 2, copier le mot de passe. Étape 3, ouvrir le site, puis appuyer longtemps dans la case et coller."
 );
@@ -365,7 +541,7 @@ $("btnSpeakHome").onclick=()=>say(
 })();
 
 // ---------- Démarrage ----------
-renderList();
+if(secure) lock(); else renderList();
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
 </script>
 </body>
