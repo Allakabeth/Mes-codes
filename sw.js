@@ -1,6 +1,6 @@
 // Garde l'application sur le téléphone pour qu'elle marche sans internet
 // (ou sur un Wi-Fi qui bloque le site).
-const CACHE = "mescodes-v4";
+const CACHE = "mescodes-v5";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

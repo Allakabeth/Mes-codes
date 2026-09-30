@@ -101,9 +101,8 @@
     </div>
     <div id="lockErr" class="err hidden">❌ Ce n'est pas le bon mot de passe.</div>
     <button class="big b-ok" id="btnUnlock">🔓 Ouvrir</button>
-    <button class="big b-light" id="btnHint">💡 Voir ma phrase pour me souvenir</button>
+    <button class="big b-light" id="btnHint">💡 J'ai oublié mon mot de passe</button>
     <div id="hintBox" class="help hidden"></div>
-    <button class="linkbtn" id="btnForgot">J'ai oublié mon mot de passe</button>
   </section>
 
   <!-- ÉCRAN CHOISIR LE MOT DE PASSE -->
@@ -120,8 +119,8 @@
     <input id="newPw2" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
     <label for="newHint">Une phrase pour me souvenir</label>
     <input id="newHint" autocomplete="off" placeholder="Ex : l'année de mon permis">
-    <p class="muted">⚠️ La phrase aide à retrouver le mot de passe, mais ne l'écrivez pas dedans.</p>
-    <div class="help">⚠️ Si vous oubliez le mot de passe, vos codes seront perdus.</div>
+    <p class="muted">⚠️ Écrivez une phrase qui vous fait penser au mot de passe, mais n'écrivez pas le mot de passe dedans.</p>
+    <div class="help">💡 Si vous oubliez le mot de passe, l'application vous montrera cette phrase.</div>
     <button class="big b-ok" id="btnSavePw">✅ Enregistrer le mot de passe</button>
     <button class="big b-danger hidden" id="btnRemovePw">🔓 Enlever le mot de passe</button>
   </section>
@@ -371,15 +370,11 @@ $("btnUnlock").onclick=unlock;
 $("lockPw").addEventListener("keydown", e=>{ if(e.key==="Enter") unlock(); });
 $("btnLockNow").onclick=()=>{ lock(); toast("🔒 Verrouillé"); };
 $("btnHint").onclick=()=>{
-  const h=(secure && secure.hint) ? secure.hint : "Vous n'avez pas écrit de phrase.";
-  const box=$("hintBox"); box.textContent="💡 "+h; box.classList.remove("hidden");
-  say("Votre phrase pour vous souvenir : "+h);
-};
-$("btnForgot").onclick=()=>{
-  if(!confirm("Sans le mot de passe, vos codes ne peuvent pas être ouverts.\n\nEffacer tous vos codes et recommencer ?")) return;
-  lsDel(KEY_SECURE); lsDel(KEY);
-  secure=null; cryptoKey=null; items=[];
-  renderList(); show("vList"); toast("🗑️ Codes effacés");
+  const h=(secure && secure.hint) ? secure.hint : "";
+  const box=$("hintBox");
+  box.textContent = h ? "💡 Votre phrase : "+h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.";
+  box.classList.remove("hidden");
+  say(h ? "Votre phrase pour vous souvenir : "+h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.");
 };
 function eyeToggle(btnId, inputIds){
   $(btnId).onclick=()=>{
@@ -410,6 +405,7 @@ $("btnSavePw").onclick=async()=>{
   const pw=$("newPw").value, pw2=$("newPw2").value, hint=$("newHint").value.trim();
   if(pw.length<4){ toast("✏️ Au moins 4 caractères"); $("newPw").focus(); return; }
   if(pw!==pw2){ toast("❌ Les 2 mots de passe sont différents"); $("newPw2").focus(); return; }
+  if(!hint){ toast("✏️ Écrivez une phrase pour vous souvenir"); $("newHint").focus(); return; }
   if(hint && hint.toLowerCase().includes(pw.toLowerCase())){ toast("⚠️ N'écrivez pas le mot de passe dans la phrase"); $("newHint").focus(); return; }
   $("btnSavePw").textContent="⏳ Enregistrement…";
   const salt=crypto.getRandomValues(new Uint8Array(16));
@@ -507,9 +503,9 @@ document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ renderList(); 
 document.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
 $("btnSpeakHome").onclick=()=>say(
   !$("vLock").classList.contains("hidden")
-  ? "Vos codes sont protégés. Écrivez votre mot de passe, puis appuyez sur Ouvrir. Si vous l'avez oublié, appuyez sur Voir ma phrase pour me souvenir."
+  ? "Vos codes sont protégés. Écrivez votre mot de passe, puis appuyez sur Ouvrir. Si vous l'avez oublié, appuyez sur J'ai oublié mon mot de passe."
   : !$("vSetPw").classList.contains("hidden")
-  ? "Choisissez un mot de passe. Écrivez-le deux fois. Puis écrivez une phrase pour vous en souvenir, sans écrire le mot de passe. Si vous oubliez le mot de passe, vos codes seront perdus."
+  ? "Choisissez un mot de passe. Écrivez-le deux fois. Puis écrivez une phrase pour vous en souvenir, sans écrire le mot de passe. Si vous oubliez le mot de passe, l'application vous montrera cette phrase."
   : $("vSite").classList.contains("hidden")
   ? "Mes codes. Appuyez sur un site pour voir votre identifiant et votre mot de passe. Pour ajouter un site, appuyez sur Ajouter un site."
   : "Étape 1, copier l'identifiant. Étape 2, copier le mot de passe. Étape 3, ouvrir le site, puis appuyer longtemps dans la case et coller."
