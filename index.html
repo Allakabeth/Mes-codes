@@ -19,12 +19,12 @@
   body{margin:0;background:var(--bg);color:var(--ink);
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
     font-size:20px;line-height:1.4;padding-bottom:env(safe-area-inset-bottom)}
-  header{background:var(--main);color:#fff;padding:18px 16px;
+  header{background:var(--main);color:#fff;padding:10px 16px;min-height:56px;
     display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5}
-  header h1{margin:0;font-size:26px;flex:1}
+  header h1{margin:0;font-size:24px;flex:1}
   header button{background:rgba(255,255,255,.18);color:#fff;border:0;
     border-radius:12px;font-size:20px;padding:10px 14px}
-  main{padding:16px;max-width:560px;margin:0 auto}
+  main{padding:12px 16px;max-width:560px;margin:0 auto}
   .hidden{display:none!important}
   button{font:inherit;cursor:pointer}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -40,26 +40,27 @@
   .b-light{background:#fff;color:var(--main);border:3px solid var(--main)}
   .b-ok{background:var(--ok);color:#fff}
   .b-danger{background:#fff;color:var(--danger);border:3px solid var(--danger)}
-  .empty{text-align:center;color:var(--muted);padding:30px 10px}
-  .empty .ico{font-size:60px}
+  .empty{text-align:center;color:var(--muted);padding:6px 10px}
+  .empty .ico{font-size:44px}
+  .empty p{margin:4px 0}
   .box{background:var(--card);border-radius:18px;padding:16px;margin-top:14px;
     border:2px solid var(--line)}
-  .step{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--muted);font-size:18px}
-  .num{background:var(--main);color:#fff;border-radius:50%;width:34px;height:34px;
+  .step{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--muted);font-size:17px}
+  .num{background:var(--main);color:#fff;border-radius:50%;width:30px;height:30px;
     display:inline-flex;align-items:center;justify-content:center;flex:none}
   .value{font-size:24px;font-weight:700;margin:10px 0 4px;word-break:break-all;
     font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px}
   .row{display:flex;gap:10px}
   .row .big{margin-top:10px}
   .eye{flex:0 0 76px}
-  .title{display:flex;align-items:center;gap:14px;border-radius:18px;
-    padding:16px;color:#fff}
-  .title .ico{font-size:46px}
-  .title h2{margin:0;font-size:26px}
+  .title{display:flex;align-items:center;gap:12px;border-radius:16px;
+    padding:8px 14px;color:#fff}
+  .title .ico{font-size:34px}
+  .title h2{margin:0;font-size:23px}
   .help{background:#fff8e1;border:2px solid #f1c232;border-radius:16px;
     padding:14px;margin-top:14px;font-size:19px}
-  label{display:block;font-weight:700;margin:16px 0 6px}
-  input{width:100%;font:inherit;font-size:22px;padding:14px;border-radius:14px;
+  label{display:block;font-weight:700;margin:12px 0 4px}
+  input{width:100%;font:inherit;font-size:21px;padding:11px 12px;border-radius:14px;
     border:3px solid var(--line);background:#fff}
   input:focus{outline:none;border-color:var(--main)}
   .speak{background:none;border:0;font-size:26px;padding:4px 8px;margin-left:auto}
@@ -71,7 +72,7 @@
   .small{font-size:17px;color:var(--muted);text-align:center;margin-top:22px}
   .center{text-align:center}
   .muted{color:var(--muted);font-size:18px;margin:8px 0}
-  .lockico{font-size:70px;text-align:center;margin-top:10px}
+  .lockico{font-size:54px;text-align:center;margin-top:0;line-height:1.2}
   .pwrow{align-items:stretch}
   .pwrow input{flex:1;min-width:0}
   .pwrow .eye{margin-top:0;min-height:0}
@@ -81,7 +82,16 @@
   #presets .site{min-height:0;height:max(80px,calc((100dvh - 170px) / 4));max-height:150px;
     padding:8px 4px;font-size:clamp(13px,3.8vw,15px);gap:4px;border-radius:14px;overflow-wrap:anywhere}
   #presets .site .ico{font-size:32px}
-  .err{color:var(--danger);font-weight:700;margin-top:10px}
+  #vSite .box{padding:10px 12px;margin-top:10px}
+  .vrow{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .vrow .value{flex:1;min-width:0;margin:0;font-size:19px;font-family:inherit;letter-spacing:0;overflow-wrap:anywhere;line-height:1.25}
+  .vrow .big{margin-top:0;min-height:52px;padding:8px 14px;font-size:20px}
+  .copybtn{flex:0 0 auto;width:auto}
+  .vrow .eye{flex:0 0 56px;padding:0}
+  .smallrow{margin-top:12px}
+  .smallbtn{flex:1;border-radius:12px;padding:10px;font-size:17px;font-weight:700;min-height:46px}
+  #vForm .title + #customFields label:first-child, .nofirstmargin label:first-child{margin-top:4px}
+  .err{color:var(--danger);font-weight:700;margin-top:8px}
   .linkbtn{display:block;margin:22px auto 0;background:none;border:0;color:var(--muted);
     text-decoration:underline;font-size:18px;padding:10px}
 </style>
@@ -90,9 +100,8 @@
 
 <header>
   <button id="hdrBack" class="hidden" aria-label="Retour">◀</button>
-  <h1 id="hdrTitle">🔑 Mes codes</h1>
+  <h1 id="hdrTitle">Mes codes</h1>
   <button id="btnLockNow" class="hidden" aria-label="Changer mon mot de passe">🔒</button>
-  <button id="btnSpeakHome" aria-label="Écouter">🔊</button>
 </header>
 
 <main>
@@ -100,12 +109,13 @@
   <!-- ÉCRAN VERROU -->
   <section id="vLock" class="hidden">
     <div class="lockico">🔒</div>
+    <p class="small" style="margin:4px 0 0">Vos codes restent uniquement sur ce téléphone.</p>
     <label for="lockPw">Mot de passe</label>
     <div class="row pwrow">
       <input id="lockPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
       <button class="big b-light eye" id="lockEye" aria-label="Voir le mot de passe">👁️</button>
     </div>
-    <div id="lockErr" class="err hidden">❌ Ce n'est pas le bon mot de passe.</div>
+    <div id="lockErr" class="err hidden">❌ Mauvais mot de passe</div>
     <button class="big b-ok" id="btnUnlock">🔓 Ouvrir</button>
     <button class="big b-light oneline" id="btnHint">💡 J'ai oublié mon mot de passe</button>
     <div id="hintBox" class="help hidden"></div>
@@ -113,7 +123,6 @@
 
   <!-- ÉCRAN CHOISIR LE MOT DE PASSE -->
   <section id="vSetPw" class="hidden compact">
-    <button class="back" data-go="list">◀ Retour</button>
     <label for="newPw">🔒 Mot de passe</label>
     <div class="row pwrow">
       <input id="newPw" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -128,64 +137,56 @@
 
   <!-- ÉCRAN 1 : LISTE -->
   <section id="vList">
-    <p class="small" style="margin:0 0 14px">🔐 Vos codes restent uniquement sur ce téléphone.</p>
-    <div id="install" class="hidden">
+    <div id="install" class="hidden" style="margin-bottom:12px">
       <button class="big b-ok" id="btnInstall" style="margin-top:0">📲 Installer sur mon téléphone</button>
       <div id="installIos" class="help hidden" style="margin-top:0">
-        📲 <b>Pour mettre l'application sur votre écran :</b><br>
-        1. Appuyez sur <b>Partager</b> <span style="font-size:26px">⬆️</span> en bas de l'écran.<br>
-        2. Appuyez sur <b>« Sur l'écran d'accueil »</b>.<br>
-        3. Appuyez sur <b>Ajouter</b>.
+        📲 <b>⬆️ Partager</b> puis <b>« Sur l'écran d'accueil »</b>
       </div>
       <div id="installOther" class="help hidden" style="margin-top:0">
-        📲 <b>Pour mettre l'application sur votre écran :</b><br>
-        1. Appuyez sur les <b>3 petits points ⋮</b> en haut à droite.<br>
-        2. Appuyez sur <b>« Ajouter à l'écran d'accueil »</b>.
+        📲 <b>⋮</b> en haut puis <b>« Ajouter à l'écran d'accueil »</b>
       </div>
     </div>
-    <div id="list" class="grid" style="margin-top:14px"></div>
+    <div id="list" class="grid"></div>
     <div id="empty" class="empty hidden">
       <div class="ico">📭</div>
-      <p>Vous n'avez pas encore de code.<br>Appuyez sur <b>Ajouter un site</b>.</p>
+      <p>Pas encore de code.</p>
     </div>
     <button class="big b-main" id="btnAdd">➕ Ajouter un site</button>
-    <button class="big b-light" id="btnProtect">🔒 Protéger mes codes avec un mot de passe</button>
+    <button class="big b-light" id="btnProtect">🔒 Protéger mes codes</button>
   </section>
 
   <!-- ÉCRAN 2 : UN SITE -->
   <section id="vSite" class="hidden">
-    <button class="back" data-go="list">◀ Retour</button>
     <div id="siteTitle" class="title"></div>
 
     <div class="box">
-      <div class="step"><span class="num">1</span> Mon identifiant
-        <button class="speak" data-say="Étape 1. Appuyez sur Copier l'identifiant.">🔊</button></div>
-      <div class="value" id="vUser"></div>
-      <button class="big b-main" id="copyUser">📋 Copier l'identifiant</button>
-    </div>
-
-    <div class="box">
-      <div class="step"><span class="num">2</span> Mon mot de passe
-        <button class="speak" data-say="Étape 2. Appuyez sur Copier le mot de passe.">🔊</button></div>
-      <div class="value" id="vPass"></div>
-      <div class="row">
-        <button class="big b-main" id="copyPass">📋 Copier le mot de passe</button>
-        <button class="big b-light eye" id="togglePass" aria-label="Voir le mot de passe">👁️</button>
+      <div class="step"><span class="num">1</span> Identifiant</div>
+      <div class="vrow">
+        <div class="value" id="vUser"></div>
+        <button class="big b-main copybtn" id="copyUser">Copier</button>
       </div>
     </div>
 
     <div class="box">
-      <div class="step"><span class="num">3</span> Aller sur le site
-        <button class="speak" data-say="Étape 3. Appuyez sur Ouvrir le site. Sur le site, appuyez longtemps dans la case, puis appuyez sur Coller.">🔊</button></div>
-      <button class="big b-ok" id="openSite">🌐 Ouvrir le site</button>
+      <div class="step"><span class="num">2</span> Mot de passe</div>
+      <div class="vrow">
+        <div class="value" id="vPass"></div>
+        <button class="big b-light eye" id="togglePass" aria-label="Voir le mot de passe">👁️</button>
+        <button class="big b-main copybtn" id="copyPass">Copier</button>
+      </div>
     </div>
 
-    <div class="help">
-      💡 Sur le site : <b>appuyez longtemps</b> dans la case,<br>puis appuyez sur <b>Coller</b>.
+    <div class="box">
+      <div class="vrow">
+        <span class="num">3</span>
+        <button class="big b-ok" id="openSite" style="margin-top:0">🌐 Ouvrir le site</button>
+      </div>
     </div>
 
-    <button class="big b-light" id="btnEdit">✏️ Modifier</button>
-    <button class="big b-danger" id="btnDelete">🗑️ Supprimer</button>
+    <div class="row smallrow">
+      <button class="b-light smallbtn" id="btnEdit">✏️ Modifier</button>
+      <button class="b-danger smallbtn" id="btnDelete">🗑️ Supprimer</button>
+    </div>
   </section>
 
   <!-- ÉCRAN 3 : CHOISIR UN SITE -->
@@ -195,19 +196,18 @@
 
   <!-- ÉCRAN 4 : FORMULAIRE -->
   <section id="vForm" class="hidden">
-    <button class="back" data-go="list">◀ Retour</button>
     <div id="formTitle" class="title"></div>
 
-    <div id="customFields">
+    <div id="customFields" class="nofirstmargin">
       <label for="fName">Nom du site</label>
-      <input id="fName" autocomplete="off" placeholder="Exemple : Ma banque">
-      <label for="fUrl">Adresse du site (facultatif)</label>
-      <input id="fUrl" autocomplete="off" inputmode="url" placeholder="Exemple : www.mabanque.fr">
+      <input id="fName" autocomplete="off" placeholder="Ex : Ma banque">
+      <label for="fUrl">Adresse du site</label>
+      <input id="fUrl" autocomplete="off" inputmode="url" placeholder="Ex : mabanque.fr">
     </div>
 
-    <label for="fUser">Mon identifiant</label>
+    <label for="fUser">Identifiant</label>
     <input id="fUser" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <label for="fPass">Mon mot de passe</label>
+    <label for="fPass">Mot de passe</label>
     <input id="fPass" autocomplete="off" autocapitalize="off" spellcheck="false">
 
     <button class="big b-ok" id="btnSave">✅ Enregistrer</button>
@@ -284,21 +284,14 @@ async function save(){
 const $ = id => document.getElementById(id);
 function show(v){
   ["vList","vSite","vPick","vForm","vLock","vSetPw"].forEach(x => $(x).classList.toggle("hidden", x!==v));
-  const pick = v==="vPick";
-  $("hdrTitle").textContent = pick ? "Nouveau code" : "🔑 Mes codes";
-  $("hdrBack").classList.toggle("hidden", !pick);
-  $("btnLockNow").classList.toggle("hidden", pick || v==="vLock" || !(secure && cryptoKey));
+  $("hdrTitle").textContent = v==="vPick" ? "Nouveau code" : "Mes codes";
+  $("hdrBack").classList.toggle("hidden", !["vSite","vPick","vForm","vSetPw"].includes(v));
+  $("btnLockNow").classList.toggle("hidden", v!=="vList" || !(secure && cryptoKey));
   window.scrollTo(0,0);
 }
 function toast(msg){
   const t=$("toast"); t.textContent=msg; t.classList.remove("hidden");
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.add("hidden"),1800);
-}
-function say(text){
-  if(!("speechSynthesis" in window)) return;
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text); u.lang="fr-FR"; u.rate=.9;
-  speechSynthesis.speak(u);
 }
 async function copy(text, btn, label){
   let ok=false;
@@ -339,7 +332,6 @@ function renderList(){
   items.forEach(it => L.appendChild(tile(it, ()=>openSite(it.uid))));
   $("empty").classList.toggle("hidden", items.length>0);
   $("btnProtect").classList.toggle("hidden", !!secure);
-  $("btnLockNow").classList.toggle("hidden", !secure);
 }
 
 // ---------- Verrou ----------
@@ -375,7 +367,6 @@ $("btnHint").onclick=()=>{
   const box=$("hintBox");
   box.textContent = h ? h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.";
   box.classList.remove("hidden");
-  say(h ? h : "Pas de phrase enregistrée. Demandez de l'aide à votre formateur.");
 };
 function eyeToggle(btnId, inputIds){
   $(btnId).onclick=()=>{
@@ -429,7 +420,7 @@ function openSite(uid){
   show("vSite");
 }
 function renderPass(){
-  $("vPass").textContent = current.pass ? (passVisible ? current.pass : "•".repeat(Math.min(current.pass.length,10))) : "—";
+  $("vPass").textContent = current.pass ? (passVisible ? current.pass : "•".repeat(8)) : "—";
   $("togglePass").textContent = passVisible ? "🙈" : "👁️";
 }
 $("togglePass").onclick=()=>{ passVisible=!passVisible; renderPass(); };
@@ -457,6 +448,7 @@ function openForm(preset, item){
   const custom = preset.id==="autre";
   titleBlock($("formTitle"), item || preset);
   $("customFields").classList.toggle("hidden", !custom);
+  $("formTitle").classList.toggle("hidden", custom && !item);
   $("fName").value = item ? item.name : "";
   $("fUrl").value  = item ? (item.url||"") : "";
   $("fUser").value = item ? (item.user||"") : "";
@@ -470,7 +462,7 @@ $("btnSave").onclick=()=>{
   if(!name){ toast("✏️ Écrivez le nom du site"); $("fName").focus(); return; }
   const data = {
     preset: preset.id, name,
-    ico: preset.ico, color: preset.color,
+    ico: custom ? "🌐" : preset.ico, color: preset.color,
     url: custom ? normUrl($("fUrl").value) : preset.url,
     user: $("fUser").value.trim(),
     pass: $("fPass").value
@@ -481,18 +473,6 @@ $("btnSave").onclick=()=>{
   openSite(item ? item.uid : data.uid);
 };
 
-// ---------- Navigation & voix ----------
-document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ renderList(); show("vList"); });
-document.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
-$("btnSpeakHome").onclick=()=>say(
-  !$("vLock").classList.contains("hidden")
-  ? "Vos codes sont protégés. Écrivez votre mot de passe, puis appuyez sur Ouvrir. Si vous l'avez oublié, appuyez sur J'ai oublié mon mot de passe."
-  : !$("vSetPw").classList.contains("hidden")
-  ? "Écrivez le mot de passe deux fois. Puis une phrase pour vous en souvenir."
-  : $("vSite").classList.contains("hidden")
-  ? "Mes codes. Appuyez sur un site pour voir votre identifiant et votre mot de passe. Pour ajouter un site, appuyez sur Ajouter un site."
-  : "Étape 1, copier l'identifiant. Étape 2, copier le mot de passe. Étape 3, ouvrir le site, puis appuyer longtemps dans la case et coller."
-);
 
 // ---------- Installation sur l'écran d'accueil ----------
 (function(){
