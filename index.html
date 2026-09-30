@@ -86,7 +86,7 @@
 
 <header>
   <h1>🔑 Mes codes</h1>
-  <button id="btnLockNow" class="hidden" aria-label="Verrouiller">🔒</button>
+  <button id="btnLockNow" class="hidden" aria-label="Changer mon mot de passe">🔒</button>
   <button id="btnSpeakHome" aria-label="Écouter">🔊</button>
 </header>
 
@@ -144,7 +144,6 @@
     </div>
     <button class="big b-main" id="btnAdd">➕ Ajouter un site</button>
     <button class="big b-light" id="btnProtect">🔒 Protéger mes codes avec un mot de passe</button>
-    <button class="big b-light" id="btnBackup">📝 Mettre mes codes dans mes notes</button>
     <p class="small">Vos codes restent uniquement sur ce téléphone.</p>
   </section>
 
@@ -332,7 +331,7 @@ function renderList(){
   const L=$("list"); L.innerHTML="";
   items.forEach(it => L.appendChild(tile(it, ()=>openSite(it.uid))));
   $("empty").classList.toggle("hidden", items.length>0);
-  $("btnProtect").textContent = secure ? "🔒 Changer mon mot de passe" : "🔒 Protéger mes codes avec un mot de passe";
+  $("btnProtect").classList.toggle("hidden", !!secure);
   $("btnLockNow").classList.toggle("hidden", !secure);
 }
 
@@ -364,7 +363,6 @@ async function unlock(){
 }
 $("btnUnlock").onclick=unlock;
 $("lockPw").addEventListener("keydown", e=>{ if(e.key==="Enter") unlock(); });
-$("btnLockNow").onclick=()=>{ lock(); toast("🔒 Verrouillé"); };
 $("btnHint").onclick=()=>{
   const h=(secure && secure.hint) ? secure.hint : "";
   const box=$("hintBox");
@@ -390,12 +388,14 @@ document.addEventListener("visibilitychange", ()=>{
 });
 
 // ---------- Choisir / changer / enlever le mot de passe ----------
-$("btnProtect").onclick=()=>{
+function openSetPw(){
   $("newPw").value=""; $("newPw2").value="";
   $("newPw").type="password"; $("newPw2").type="password"; $("newEye").textContent="👁️";
   $("newHint").value = secure ? (secure.hint||"") : "";
   show("vSetPw");
-};
+}
+$("btnProtect").onclick=openSetPw;
+$("btnLockNow").onclick=openSetPw;
 $("btnSavePw").onclick=async()=>{
   const pw=$("newPw").value, pw2=$("newPw2").value, hint=$("newHint").value.trim();
   if(pw.length<4){ toast("✏️ Au moins 4 caractères"); $("newPw").focus(); return; }
@@ -471,21 +471,6 @@ $("btnSave").onclick=()=>{
   else { data.uid=Date.now().toString(36)+Math.random().toString(36).slice(2,6); items.push(data); }
   save(); renderList(); toast("✅ Enregistré");
   openSite(item ? item.uid : data.uid);
-};
-
-// ---------- Sauvegarde dans les notes ----------
-$("btnBackup").onclick=async e=>{
-  if(!items.length){ toast("📭 Aucun code à sauvegarder"); return; }
-  if(secure && !confirm("Attention : dans Notes, vos codes ne sont PAS protégés.\nToute personne qui a votre téléphone pourra les lire.\n\nContinuer ?")) return;
-  const text = "MES CODES\n\n" + items.map(i =>
-    `${i.name}\nIdentifiant : ${i.user||"-"}\nMot de passe : ${i.pass||"-"}` + (i.url?`\nSite : ${i.url}`:"")
-  ).join("\n\n");
-  if(navigator.share){
-    try{ await navigator.share({title:"Mes codes", text}); return; }
-    catch(err){ if(err && err.name==="AbortError") return; }
-  }
-  copy(text, e.currentTarget, "Tout");
-  setTimeout(()=>alert("Tout est copié.\nOuvrez l'application Notes, appuyez longtemps, puis Coller."),300);
 };
 
 // ---------- Navigation & voix ----------
